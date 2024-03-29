@@ -9,6 +9,28 @@ import kotlin.test.assertFalse
 
 class YamlParserReflectTest {
 
+    @Test
+    fun `test parse object with different parameter name`() {
+        val yaml = """
+            name: Maria Candida
+            origin: Oleiros
+            nr: 873435"""
+        val person = YamlParserReflect.yamlParser(Student::class).parseObject(yaml.reader())
+        assertEquals("Maria Candida", person.name)
+        assertEquals("Oleiros", person.from)
+    }
+
+    @Test
+    fun `invalid parameter name`() {
+        val yaml = """
+            name: Maria Candida
+            country: Oleiros
+            nr: 873435"""
+        assertThrows<IllegalArgumentException> {
+            YamlParserReflect.yamlParser(Student::class).parseObject(yaml.reader())
+        }
+    }
+
     @Test fun parseStudentWithMissingProperties() {
         val yaml = """
                 name: Maria Candida
