@@ -3,6 +3,7 @@ package pt.isel
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
@@ -37,16 +38,26 @@ class YamlParserReflect<T : Any>(type: KClass<T>) : AbstractYamlParser<T>(type) 
         val ctorArgs: Map<KParameter, Any?> =
             args
                 .map { (key, value) ->
-                    val param = ctor.parameters.first { it.name == validParameter(key).name }
-                    val stringValue = value as String
-                    param to stringValue.withType(param.type)
+                    val param = ctor.parameters.first { it.name == validProperty(key).name }
+                    val selValue = hasYamlConverter(key, value as String)
+                    if (selValue != null) {
+                        param to selValue
+                    } else{
+                        param to value.withType(param.type)
+                    }
                 }
                 .toMap()
         return ctor.callBy(ctorArgs)
     }
 
-    private fun validParameter(name: String) =
-        currType.memberProperties.firstOrNull { it.name == name || it.findAnnotation<YamlArg>()?.scrName == name }
+    private fun hasYamlConverter(key: String,value: String): Any? {
+        val property = validProperty(key)
+        val converter = property.findAnnotation<YamlConvert>() ?: return null
+        return converter.converter.createInstance().convert(value)
+    }
+
+    private fun validProperty(name: String) =
+        currType.memberProperties.firstOrNull { it.name == name || it.findAnnotation<YamlArg>()?.scrName == name}
             ?: throw IllegalArgumentException("Parameter $name not found in constructor")
 
     private fun String.withType(type: KType): Any =

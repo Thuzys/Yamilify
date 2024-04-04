@@ -2,12 +2,27 @@ package pt.isel
 
 import org.junit.jupiter.api.assertThrows
 import pt.isel.test.Classroom
+import pt.isel.test.NewStudent
 import pt.isel.test.Student
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class YamlParserReflectTest {
+
+    @Test
+    fun `test of parse object with Yaml converter`() {
+        val yaml = """
+            name: Maria Candida
+            from: Oleiros
+            nr: 873435
+            birth: 1999-12-12"""
+        val person = YamlParserReflect.yamlParser(Student::class).parseObject(yaml.reader())
+        assertEquals("Maria Candida", person.name)
+        assertEquals("Oleiros", person.from)
+        assertEquals(873435, person.nr)
+        assertEquals("1999-12-12", person.birth.toString())
+    }
 
     @Test
     fun `test parse object with different parameter name`() {
@@ -56,15 +71,18 @@ class YamlParserReflectTest {
                 address:
                   street: Rua Rosa
                   nr: 78
-                  city: Lisbon
+                  city:
+                    name: Lisbon
+                    country: Portugal
                 from: Oleiros"""
-        val st = YamlParserReflect.yamlParser(Student::class).parseObject(yaml.reader())
+        val st = YamlParserReflect.yamlParser(NewStudent::class).parseObject(yaml.reader())
         assertEquals("Maria Candida", st.name)
         assertEquals(873435, st.nr)
         assertEquals("Oleiros", st.from)
         assertEquals("Rua Rosa", st.address?.street)
         assertEquals(78, st.address?.nr)
-        assertEquals("Lisbon", st.address?.city)
+        assertEquals("Lisbon", st.address?.city?.name)
+        assertEquals("Portugal", st.address?.city?.country)
     }
 
     @Test fun parseSequenceOfStrings() {

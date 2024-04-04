@@ -87,5 +87,4 @@ abstract class AbstractYamlParser<T : Any>(private val type: KClass<T>) : YamlPa
         }
         return r as? T ?: throw IllegalArgumentException("Type not found")
     }
-
 }
