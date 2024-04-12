@@ -182,6 +182,7 @@ class YamlParserReflectTest {
             .iterator()
         assertStudentsInSequence(seq)
     }
+
     @Test fun parseClassroom() {
         val yaml = """
           id: i45
