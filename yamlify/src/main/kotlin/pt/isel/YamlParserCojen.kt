@@ -4,7 +4,6 @@ import org.cojen.maker.ClassMaker
 import org.cojen.maker.MethodMaker
 import org.cojen.maker.Variable
 import java.io.FileOutputStream
-import java.time.LocalDate
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.findAnnotation
@@ -49,16 +48,19 @@ open class YamlParserCojen<T : Any>(
         fun <T : Any> yamlParser(type: KClass<T>, nrOfInitArgs: Int = type.constructors.first().parameters.size): AbstractYamlParser<T> {
             return yamlParsers.getOrPut(parserName(type, nrOfInitArgs)) {
                 YamlParserCojen(type, nrOfInitArgs)
-                    .buildYamlParser()//.also { it.finishTo(FileOutputStream(parserName(type, nrOfInitArgs) + ".class")) }
+                    .buildYamlParser()
                     .finish()
                     .getConstructor(KClass::class.java, Int::class.java)
                     .newInstance(type, nrOfInitArgs) as YamlParserCojen<*>
             } as YamlParserCojen<T>
         }
+
         fun <T: Any> yamlParser(type: Class<T>, nrOfInitArgs: Int) : AbstractYamlParser<T> =
             yamlParser(type.kotlin, nrOfInitArgs)
+
         fun <T: Any> yamlParser(type: Class<T>) : AbstractYamlParser<T> =
             yamlParser(type.kotlin)
+
         fun <T: Any>testBuildMaker(type: KClass<T>, nrOfInitArgs: Int) {
             val cm = YamlParserCojen(type, nrOfInitArgs).buildYamlParser()
             cm.finishTo(FileOutputStream("YamlParserCojenDummy.class"))
@@ -215,41 +217,11 @@ open class YamlParserCojen<T : Any>(
                     args.invoke("get", yamlArg[param.name])
                 )
             }
-            /**
-             * Code used for Cojen Maker debugging
-             */
-//            method.`var`(System::class.java)
-//                .field("out")
-//                .invoke("println", value)
-//            method.`var`(System::class.java)
-//                .field("out")
-//                .invoke("println", param.name)
-//            method.`var`(System::class.java)
-//                .field("out")
-//                .invoke("println", "")
+
             val convert = yamlConvert[param.name]
             if (convert != null) {
-                /**
-                 * Code used for [YamlToDate] error debugging
-                 * for error information see YamlConverter_Error directory on the project root
-                 */
-//                val c = convert.converter.createInstance()
-//                val t = method.`var`(DummyDataSerializer::class.java)
-//                    .invoke( "strConverter", value.cast(String::class.java))
-//                val t =
-//                    method.`var`(YamlToDate::class.java)
-//                        .invoke("strConverter", value.cast(String::class.java))
-//                val t =
-//                    method.`var`(c::class.java)
-//                        .invoke("strConverter", value.cast(String::class.java))
-//                method.`var`(System::class.java)
-//                    .field("out")
-//                    .invoke("println", t)
-//                method.`var`(System::class.java)
-//                    .field("out")
-//                    .invoke("println", value.cast(String::class.java))
-                method.`var`(LocalDate::class.java)
-                    .invoke("parse", value.cast(String::class.java))
+                method.new_(convert.converter.java)
+                    .invoke("strConverter", value.cast(String::class.java))
             } else {
                 typeOf(method, param.type, value, kParam)
             }
@@ -267,35 +239,14 @@ open class YamlParserCojen<T : Any>(
         kParam: KParameter,
     ): Variable {
         return when(cClass) {
-            Int::class.java ->
-                method
-                    .`var`(Integer::class.java)
-                    .invoke("parseInt", v.cast(String::class.java))
+            Int::class.java -> typeParser(method, v, Int::class.java, "parseInt")
             Char::class.java -> v.invoke("charAt", 0)
-            Boolean::class.java ->
-                method
-                    .`var`(Boolean::class.java)
-                    .invoke("parseBoolean", v.cast(String::class.java))
-            Long::class.java ->
-                method
-                    .`var`(Long::class.java)
-                    .invoke("parseLong", v.cast(String::class.java))
-            Short::class.java ->
-                method
-                    .`var`(Short::class.java)
-                    .invoke("parseShort", v.cast(String::class.java))
-            Byte::class.java ->
-                method
-                    .`var`(Byte::class.java)
-                    .invoke("parseByte", v.cast(String::class.java))
-            Double::class.java ->
-                method
-                .`var`(Double::class.java)
-                .invoke("parseDouble", v.cast(String::class.java))
-            Float::class.java ->
-                method
-                    .`var`(Float::class.java)
-                    .invoke("parseFloat", v.cast(String::class.java))
+            Boolean::class.java -> typeParser(method, v, Boolean::class.java, "parseBoolean")
+            Long::class.java -> typeParser(method, v, Long::class.java, "parseLong")
+            Short::class.java -> typeParser(method, v, Short::class.java, "parseShort")
+            Byte::class.java -> typeParser(method, v, Byte::class.java, "parseByte")
+            Double::class.java -> typeParser(method, v, Double::class.java, "parseDouble")
+            Float::class.java -> typeParser(method, v, Float::class.java, "parseFloat")
             String::class.java -> v.cast(String::class.java)
             else -> {
                 if (cClass == List::class.java) {
@@ -351,4 +302,9 @@ open class YamlParserCojen<T : Any>(
             }
         }
     }
+
+    private fun typeParser(method: MethodMaker, v: Variable, type: Class<*>, func: String): Variable =
+        method
+            .`var`(type)
+            .invoke(func, v.cast(String::class.java))
 }

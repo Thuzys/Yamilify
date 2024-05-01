@@ -8,33 +8,33 @@ import kotlin.test.assertFalse
 
 class YamlParserCojenTest {
 
-//    @Test
-//    fun parseWithYamlConverter() {
-//        val yaml = """
-//            name: Maria Candida
-//            from: Oleiros
-//            nr: 873435
-//            address:
-//              street: Rua Rosa
-//              nr: 78
-//              city: Lisbon
-//            grades:
-//                -
-//                  subject: LAE
-//                  classification: 18
-//                -
-//                  subject: PDM
-//                  classification: 15
-//                -
-//                  subject: PC
-//                  classification: 19
-//            birth: 1999-12-12"""
-//        val st = YamlParserCojen.yamlParser(Student::class).parseObject(yaml.reader())
-//        assertEquals("Maria Candida", st.name)
-//        assertEquals("Oleiros", st.from)
-//        assertEquals(873435, st.nr)
-//        assertEquals("1999-12-12", st.birth.toString())
-//    }
+    @Test
+    fun parseWithYamlConverter() {
+        val yaml = """
+            name: Maria Candida
+            from: Oleiros
+            nr: 873435
+            address:
+              street: Rua Rosa
+              nr: 78
+              city: Lisbon
+            grades:
+                -
+                  subject: LAE
+                  classification: 18
+                -
+                  subject: PDM
+                  classification: 15
+                -
+                  subject: PC
+                  classification: 19
+            birth: 1999-12-12"""
+        val st = YamlParserCojen.yamlParser(Student::class).parseObject(yaml.reader())
+        assertEquals("Maria Candida", st.name)
+        assertEquals("Oleiros", st.from)
+        assertEquals(873435, st.nr)
+        assertEquals("1999-12-12", st.birth.toString())
+    }
 
     @Test
     fun parseWithYamlArg() {
