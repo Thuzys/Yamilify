@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 
 abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
 
-     internal val typeReturn: (Any) -> T by lazy {
+     private val typeReturn: (Any) -> T by lazy {
          when (type) {
             Int::class -> { it -> (it as String).toInt() as T }
             Char::class -> { it -> (it as String).first() as T }
@@ -91,6 +91,8 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
         return argsMap
     }
 
+    fun typeReturn(map: Map<String, Any>) : List<T> =
+        map.values.map(typeReturn)
 }
 
 private fun String.splitIfExist(vararg delimiters: String): List<String> {

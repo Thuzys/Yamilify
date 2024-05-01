@@ -103,7 +103,7 @@ class YamlParserReflect<T : Any> private constructor(type: KClass<T>) : Abstract
                 .map { (key, value) ->
                     val param = parameters[key]
                         ?: throw IllegalArgumentException("Parameter $key not found in constructor")
-                    val selValue = constructor[key]?.convert(value as String)
+                    val selValue = constructor[key]?.strConverter(value as String)
                     if (selValue != null) {
                         param to selValue
                     } else{
@@ -137,7 +137,7 @@ class YamlParserReflect<T : Any> private constructor(type: KClass<T>) : Abstract
             else -> {
                 checkNotNull(parser)
                 if (classifier == List::class) {
-                    { param -> (param as Map<String, Any>).values.map(parser.typeReturn) }
+                    { param -> parser.typeReturn(param as Map<String, Any>) }
                 } else {
                     { param -> parser.newInstance(param as Map<String, Any>) }
                 }

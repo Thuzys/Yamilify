@@ -1,5 +1,5 @@
 package pt.isel
 
 interface YamlSerializer<T> {
-    fun convert(str: String): T
+    fun strConverter(str: String): T
 }

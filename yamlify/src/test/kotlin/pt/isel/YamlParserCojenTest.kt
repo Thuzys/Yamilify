@@ -8,6 +8,53 @@ import kotlin.test.assertFalse
 
 class YamlParserCojenTest {
 
+//    @Test
+//    fun parseWithYamlConverter() {
+//        val yaml = """
+//            name: Maria Candida
+//            from: Oleiros
+//            nr: 873435
+//            address:
+//              street: Rua Rosa
+//              nr: 78
+//              city: Lisbon
+//            grades:
+//                -
+//                  subject: LAE
+//                  classification: 18
+//                -
+//                  subject: PDM
+//                  classification: 15
+//                -
+//                  subject: PC
+//                  classification: 19
+//            birth: 1999-12-12"""
+//        val st = YamlParserCojen.yamlParser(Student::class).parseObject(yaml.reader())
+//        assertEquals("Maria Candida", st.name)
+//        assertEquals("Oleiros", st.from)
+//        assertEquals(873435, st.nr)
+//        assertEquals("1999-12-12", st.birth.toString())
+//    }
+
+    @Test
+    fun parseWithYamlArg() {
+        val yaml = """
+            name: Maria Candida
+            nr: 873435
+            address:
+              street: Rua Rosa
+              nr: 78
+              city: Lisbon
+            origin: Oleiros"""
+        val st = YamlParserCojen.yamlParser(Student::class, 4).parseObject(yaml.reader())
+        assertEquals("Maria Candida", st.name)
+        assertEquals(873435, st.nr)
+        assertEquals("Oleiros", st.from)
+        assertEquals("Rua Rosa", st.address?.street)
+        assertEquals(78, st.address?.nr)
+        assertEquals("Lisbon", st.address?.city)
+    }
+
     @Test
     fun parseStudent() {
         val yaml = """
@@ -28,7 +75,8 @@ class YamlParserCojenTest {
                   street: Rua Rosa
                   nr: 78
                   city: Lisbon
-                from: Oleiros"""
+                from: Oleiros
+                """
         val st = YamlParserCojen.yamlParser(Student::class, 4).parseObject(yaml.reader())
         assertEquals("Maria Candida", st.name)
         assertEquals(873435, st.nr)
