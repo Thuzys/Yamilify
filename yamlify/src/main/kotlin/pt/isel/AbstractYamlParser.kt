@@ -36,6 +36,13 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
         return newInstance(argsMap)
     }
 
+    /**
+     * Populates the map with the elements of the yaml file.
+     *
+     * @param elems the elements of the yaml file.
+     * @param currIdent the current indentation level.
+     * @return the indentation level of the last element.
+     */
     private fun MutableMap<String, Any>.populateMap(
         elems: ListIterator<String>,
         currIdent: Int
