@@ -32,17 +32,6 @@ open class YamlParserCojen<T : Any>(
     }
 
     companion object {
-        private val primitiveType = setOf(
-            Int::class,
-            Char::class,
-            Boolean::class,
-            Long::class,
-            Short::class,
-            Byte::class,
-            Double::class,
-            Float::class,
-            String::class
-        )
 
         private val mPMap = mutableMapOf<KClass<*>, Collection<KProperty1<*, *>>>()
 

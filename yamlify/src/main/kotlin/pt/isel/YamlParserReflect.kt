@@ -60,18 +60,6 @@ class YamlParserReflect<T : Any> private constructor(type: KClass<T>) : Abstract
     }
 
     companion object {
-        val primitiveType = setOf(
-            Int::class,
-            Char::class,
-            Boolean::class,
-            Long::class,
-            Short::class,
-            Byte::class,
-            Double::class,
-            Float::class,
-            String::class
-        )
-
         /**
          *Internal cache of YamlParserReflect instances.
          */

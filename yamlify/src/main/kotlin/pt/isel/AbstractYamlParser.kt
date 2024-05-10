@@ -5,6 +5,7 @@ import kotlin.reflect.KClass
 
 abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
 
+     @Suppress("UNCHECKED_CAST")
      private val typeReturn: (Any) -> T by lazy {
          when (type) {
             Int::class -> { it -> (it as String).toInt() as T }
@@ -19,6 +20,23 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
             else -> { it -> newInstance(it as Map<String, Any>) }
         }
      }
+
+    private val isPrimitive by lazy { type in primitiveType }
+
+    companion object {
+        val primitiveType =
+            arrayOf(
+                Int::class,
+                Char::class,
+                Boolean::class,
+                Long::class,
+                Short::class,
+                Byte::class,
+                Double::class,
+                Float::class,
+                String::class
+            )
+    }
 
     /**
      * Used to get a parser for another Type using this same parsing approach.
@@ -53,27 +71,38 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
             val elem = elems.next()
             val ident = elem.indexOfFirst { it != ' ' }
             if (ident == currIdent) {
-                val (name, value) = elem.trimIndent().splitIfExist(":", " ")
-                if (value.isNotBlank()) {
-                    if (name != "-") put(name, value.trim() as Any)
-                    else put(name+idx++, value.trim() as Any)
+                val list = elem
+                    .split(":", limit = 2)
+                    .filter(String::isNotBlank)
+                    .map(String::trim)
+                if (list.size > 1) {
+                    val (name, value) = list
+                    if (name != "-") put(name, value)
+                    else put(name+idx++, value)
                 } else {
+                    val name = list[0]
                     key =
-                        if (name.trim() == "-")
+                        if (name == "-")
                             name + idx++
                         else
                             name
                 }
             }
             else if (ident > currIdent) {
-                val (name, value) = elem.trimIndent().splitIfExist(":", " ")
-                val auxMap = if (value.isNotBlank()) {
-                    val newName = if (name.trim() != "-") name else name.trim() + idx++
-                    mutableMapOf(newName to value.trim() as Any)
-                } else {
-                    if (name.trim() == "-") elems.previous()
-                    mutableMapOf()
-                }
+                val list = elem
+                    .split(":", limit = 2)
+                    .filter(String::isNotBlank)
+                    .map(String::trim)
+                val auxMap: MutableMap<String, Any> =
+                    if (list.size > 1) {
+                        val (name, value) = list
+                        val newName = if (name != "-") name else name + idx++
+                        mutableMapOf(newName to value)
+                    } else {
+                        val name = list[0]
+                        if (name == "-") elems.previous()
+                        mutableMapOf()
+                    }
                 val retIdent = auxMap.populateMap(elems, ident)
                 put(key, auxMap)
                 if (retIdent < currIdent) return retIdent
@@ -86,13 +115,29 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
     }
 
     final override fun parseList(yaml: Reader): List<T> {
-        val argsMap = createArgsMap(yaml)
-        return argsMap.values.map(typeReturn)
+        return if (isPrimitive) {
+            val lines = yaml
+                .readLines()
+                .filter(String::isNotBlank)
+            lines
+                .map { it.substringAfter("- ") }
+                .map(String::trim)
+                .map(typeReturn)
+        }
+        else {
+            createArgsMap(yaml)
+                .values
+                .map(typeReturn)
+        }
     }
 
     private fun createArgsMap(yaml: Reader): MutableMap<String, Any> {
-        val lines = yaml.readLines().filter { it.isNotBlank() }
-        val firstIdent = lines.first().indexOfFirst { it != ' ' }
+        val lines = yaml
+            .readLines()
+            .filter(String::isNotBlank)
+        val firstIdent = lines
+            .first()
+            .indexOfFirst { it != ' ' }
         val argsMap = mutableMapOf<String, Any>()
         argsMap.populateMap(lines.listIterator(), firstIdent)
         return argsMap
@@ -100,9 +145,4 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
 
     fun typeReturn(map: Map<String, Any>) : List<T> =
         map.values.map(typeReturn)
-}
-
-private fun String.splitIfExist(vararg delimiters: String): List<String> {
-    val list = this.split(*delimiters, limit = 2)
-    return if (list.size > 1) list else listOf(this, "")
 }
