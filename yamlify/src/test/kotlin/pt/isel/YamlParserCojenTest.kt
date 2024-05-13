@@ -2,11 +2,137 @@ package pt.isel
 
 import pt.isel.test.Classroom
 import pt.isel.test.Student
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class YamlParserCojenTest {
+
+    private val initFileContent = """
+    name: Maria Candida
+    nr: 873435
+    address:
+      street: Rua Rosa
+      nr: 78
+      city: Lisbon
+    from: Oleiros
+    grades:
+      -
+        subject: LAE
+        classification: 18
+      -
+        subject: PDM
+        classification: 15
+      -
+        subject: PC
+        classification: 19
+    birth: 1999-12-12
+    """.trimIndent()
+    private val alteredFileContent = """
+    name: Maria Candida
+    nr: 873435
+    address:
+      street: Rua Rosa
+      nr: 78
+      city: Lisbon
+    from: Lisbon
+    grades:
+      -
+        subject: LAE
+        classification: 18
+      -
+        subject: PDM
+        classification: 15
+      -
+        subject: PC
+        classification: 19
+    birth: 1999-12-12
+    """.trimIndent()
+
+    private val fileYamlObjectPath = "/Users/arthuroliveira/Documents/Isel/4Semester/LAE/yamlify-i43d-2024-14/yamlify/src/test/resources/YamlObject.txt"
+    private val directoryPath = "/Users/arthuroliveira/Documents/Isel/4Semester/LAE/yamlify-i43d-2024-14/yamlify/src/test/resources"
+
+
+    @Test
+    fun `folder lazy test YamlObject`() {
+        val parser = YamlParserCojen.yamlParser(Student::class, 6)
+        val iterator = parser.parseFolderLazy(directoryPath).iterator()
+        val student = iterator.next()
+        assertEquals("Paulo Silva", student.name)
+        assertEquals(873435, student.nr)
+        assertEquals("Rua Rosa", student.address?.street)
+        assertEquals(78, student.address?.nr)
+        assertEquals("Lisbon", student.address?.city)
+        assertEquals("Liverpool", student.from)
+        assertEquals(3, student.grades.size)
+        assertEquals("1999-12-12", student.birth.toString())
+        File(fileYamlObjectPath).writeText(alteredFileContent)
+        iterator.next()
+        val thirdStudent = iterator.next()
+        assertEquals("Maria Candida", thirdStudent.name)
+        assertEquals("Lisbon", thirdStudent.from)
+        // revert file changes
+        File(fileYamlObjectPath).writeText(initFileContent)
+    }
+
+    @Test
+    fun `folder eager test YamlObject`() {
+        val parser = YamlParserCojen.yamlParser(Student::class, 6)
+        val iterator = parser.parseFolderEager(directoryPath).iterator()
+        val student = iterator.next()
+        assertEquals("Paulo Silva", student.name)
+        assertEquals(873435, student.nr)
+        assertEquals("Rua Rosa", student.address?.street)
+        assertEquals(78, student.address?.nr)
+        assertEquals("Lisbon", student.address?.city)
+        assertEquals("Liverpool", student.from)
+        assertEquals(3, student.grades.size)
+        assertEquals("1999-12-12", student.birth.toString())
+        File(fileYamlObjectPath).writeText(alteredFileContent)
+        iterator.next()
+        val thirdStudent = iterator.next()
+        assertEquals("Maria Candida", thirdStudent.name)
+        assertEquals("Oleiros", thirdStudent.from)
+        // revert file changes
+        File(fileYamlObjectPath).writeText(initFileContent)
+    }
+
+    @Test
+    fun `lazy sequence Yaml converter`()  {
+        val yaml = """
+            -
+              name: Maria Candida
+              nr: 873435
+              address:
+                street: Rua Rosa
+                nr: 78
+                city: Lisbon
+              from: Oleiros
+            - 
+              name: Jose Carioca
+              nr: 1214398
+              address:
+                street: Rua Azul
+                nr: 12
+                city: Porto
+              from: Tamega
+        """.trimIndent()
+        val parser = YamlParserCojen.yamlParser(Student::class, 4)
+        val seq = parser.parseSequence(yaml.reader())
+        DummyYamlConverter.resetCount()
+        assertEquals(0, DummyYamlConverter.count)
+        val seqIterator = seq.iterator()
+        val elem1 = seqIterator.next()
+        assertEquals("Maria Candida", elem1.name)
+        assertEquals(1, DummyYamlConverter.count)
+        assertEquals(873435, elem1.nr)
+        assertEquals("Rua Rosa", elem1.address?.street)
+        assertEquals("Oleiros", elem1.from)
+        val elem2 = seqIterator.next()
+        assertEquals("Jose Carioca", elem2.name)
+        assertEquals(2, DummyYamlConverter.count)
+    }
 
     @Test
     fun parseWithYamlConverter() {

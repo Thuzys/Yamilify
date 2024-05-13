@@ -1,5 +1,6 @@
 package pt.isel
 
+import java.io.File
 import java.io.Reader
 import kotlin.reflect.KClass
 
@@ -129,6 +130,89 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
                 .values
                 .map(typeReturn)
         }
+    }
+
+    final override fun parseSequence(yaml: Reader): Sequence<T> {
+        return sequence {
+            val argMap = createArgsMap(yaml)
+            argMap.values.forEach {
+                yield(typeReturn(it))
+            }
+        }
+//        return object : Sequence<T> {
+//            override fun iterator(): Iterator<T> {
+//                return object : Iterator<T> {
+//                    private val iterator = createArgsMap(yaml).values.iterator()
+//                    private lateinit var curr: T
+//                    private var isConsumed = true
+//                    override fun hasNext(): Boolean {
+//                        if(isConsumed) {
+//                            if (iterator.hasNext()) {
+//                                curr = typeReturn(iterator.next())
+//                                isConsumed = false
+//                                return true
+//                            }
+//                            return false
+//                        }
+//                        return true
+//                    }
+//                    override fun next(): T {
+//                        if (!hasNext()) throw NoSuchElementException("The sequence is empty")
+//                        isConsumed = true
+//                        return curr
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    final override fun parseFolderEager(path: String): List<T> {
+        var number = 0
+        return File(path)
+            .listFiles()
+            ?.map { createArgsMap(it.absolutePath) }
+            ?.map {
+                try {
+                    number++
+                    newInstance(it)
+                } catch (e: IllegalArgumentException) {
+                    if (number > 0)
+                        throw IllegalArgumentException("Type of arguments in the list are not the same.")
+                    else
+                        throw e
+                }
+            } ?: emptyList()
+    }
+
+    final override fun parseFolderLazy(path: String): Sequence<T> {
+        val listOfPath = File(path).listFiles()
+        var number = 0
+        return sequence {
+            listOfPath?.forEach {
+                val argMap = createArgsMap(it.absolutePath)
+                try {
+                    yield(newInstance(argMap))
+                } catch (e: IllegalArgumentException) {
+                    if (number > 0)
+                        throw IllegalArgumentException("Type of arguments in the list are not the same.")
+                    else
+                        throw e
+                }
+            }
+        }
+    }
+
+    private fun createArgsMap(path: String): Map<String, Any> {
+        val reader = File(path)
+            .readText()
+            .split('\n')
+            .filter(String::isNotBlank)
+        val firstIdent = reader
+            .first()
+            .indexOfFirst { it != ' ' }
+        val argsMap = mutableMapOf<String, Any>()
+        argsMap.populateMap(reader.listIterator(), firstIdent)
+        return argsMap
     }
 
     private fun createArgsMap(yaml: Reader): MutableMap<String, Any> {

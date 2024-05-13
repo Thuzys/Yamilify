@@ -1,12 +1,12 @@
 ## yamlify - YAML Parser
 
-YAML Parser through Reflection API and bytecode generation for JVM, 
+YAML Parser through Reflection API and bytecode generation for JVM,
 with both eager and lazy sequences processing.
 
 ## Assignments
 
-1. Published 20-3-2024 **DEADLINE: 06-4-2024**
-1. Published 20-3-2024 **DEADLINE: 27-4-2024**
+1. Published 20-3-2024 **DEADLINE:** ~06-4-2024~ **13-04-2024**
+1. Published 20-3-2024 **DEADLINE:** ~27-4-2024~ **04-05-2024**
 1. Published 05-5-2024 **DEADLINE: 25-5-2024**
 
 ***
@@ -18,7 +18,7 @@ parser, adhering to specific aspects of the [YAML version 1.2.2 specification](h
 It's important to note that these implementations will have certain limitations:
 * **No support** either block string nor line folding with `|` or `>`.
 * **No support** of _flow styles_
-* Type-safe ONLY with constructor injection. 
+* Type-safe ONLY with constructor injection.
 * No support of mutable properties injection.
 
 Namely, examples 2.5 and 2.6 of [YAML 1.2.2](https://yaml.org/spec/1.2.2)
@@ -30,9 +30,9 @@ of the YAML parser.
 ### 1.1
 
 You are required to implement the YAML parsing algorithm in the missing methods
-of the `AbstractYamlParser` class. 
+of the `AbstractYamlParser` class.
 Additionally, you need to implement the `newInstance` method of the
-`YamlParserReflect` class. 
+`YamlParserReflect` class.
 It's important to note that methods of `AbstractYamlParser` will invoke the hook
 method `newInstance`, passing the necessary `Map<String, Any>`.
 Ensure that your implementation successfully passes the provided unit tests.
@@ -54,7 +54,7 @@ Modify `YamlParserReflect` to support the specified behavior and **validate it w
 The `YamlParserReflect` should support extensibility with custom parsers
 provided by the domain class.
 For instance, when dealing with a YAML mapping like `birth: 2004-05-26`, you
-might want to parse the value as an instance of `LocalDate`. 
+might want to parse the value as an instance of `LocalDate`.
 To achieve this, you can annotate the corresponding constructor argument as
 follows:
 
@@ -93,7 +93,7 @@ java -jar yamlify-bench/build/libs/yamlify-bench-jmh.jar -i 4 -wi 4 -f 1 -r 2 -w
 * `-f`  1 fork
 * `-r`  2 run each iteration for 2 seconds
 * `-w`  2 run each warmup iteration for 2 seconds.
-* `-tu` ms time unit milliseconds 
+* `-tu` ms time unit milliseconds
 
 ## Assigment 2
 
@@ -124,3 +124,45 @@ The suffix number in the class name indicates the number of parameters of the
 constructor used in the instantiation of the domain class.
 
 ![Reflect versus Dynamic](reflect-versus-dynamic.png "Reflect versus Dynamic")
+
+## Assigment 3
+
+### 3.1
+
+Implement a new method `parseSequence(yaml: Reader): Sequence<T>` that returns
+a **lazy sequence** for the YAML list read from the `yaml` `Reader` parameter.
+Throw an exception if the `yaml` `Reader` does not contain a representation of a
+list that should be transformed to a (**lazy**) sequence.
+
+Requirements:
+* The `parseSequence` method should be called **solely for parsing the root
+  elements** of the YAML, whereas
+  nested elements should still be handled as
+  _mappings_ (i.e. objects) or _sequences_ parsed through the `parseObject()` and
+  `parseList()` methods, respectively.
+* The `parseSequence` method should be implemented in `AbstractYamlParser` and
+  available to both subclasses `YamlParserReflect` and `YamlParserCojen`.
+
+Implement unit tests that verify the lazy behavior of the `parseSequence`
+method.
+
+Use the `@YamlConvert` annotation to associate a function
+that checks the moment when the elements of the sequence are produced.
+
+You should test and verify the correct behavior for both `YamlParserReflect` and
+`YamlParserCojen`.
+
+## 3.2
+
+Implement two new methods, `parseFolderEager(path: String): List<T>` and
+`parseFolderLazy(path: String): Sequence<T>`, which return a list or a lazy
+sequence, respectively. Each element in the list or sequence is the result of
+applying `parseObject` to the content of each file in the folder specified by
+`path`.
+
+Implement unit tests that demonstrate whether a change in a file during an
+iteration over the result of `parseFolder...` is visible or not, depending on
+whether the lazy or eager approach is used.
+
+Assume that all files have YAML representations of objects of the same type.
+Throw an exception if the YAML object is incompatible with `T`.
