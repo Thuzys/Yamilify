@@ -11,5 +11,4 @@ class DummyYamlConverter: YamlSerializer<String> {
         count++
         return str
     }
-
 }

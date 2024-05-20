@@ -3,6 +3,8 @@ package pt.isel
 import pt.isel.test.Classroom
 import pt.isel.test.Student
 import java.io.File
+import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -50,8 +52,15 @@ class YamlParserCojenTest {
     birth: 1999-12-12
     """.trimIndent()
 
-    private val fileYamlObjectPath = "/Users/arthuroliveira/Documents/Isel/4Semester/LAE/yamlify-i43d-2024-14/yamlify/src/test/resources/YamlObject.txt"
-    private val directoryPath = "/Users/arthuroliveira/Documents/Isel/4Semester/LAE/yamlify-i43d-2024-14/yamlify/src/test/resources"
+    private val fileYamlObjectPath =
+        Paths
+            .get("src", "test", "resources", "YamlObject.txt")
+            .absolutePathString()
+
+    private val directoryPath =
+        Paths
+            .get("src", "test", "resources")
+            .absolutePathString()
 
 
     @Test

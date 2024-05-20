@@ -192,6 +192,7 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
                 val argMap = createArgsMap(it.absolutePath)
                 try {
                     yield(newInstance(argMap))
+                    number++
                 } catch (e: IllegalArgumentException) {
                     if (number > 0)
                         throw IllegalArgumentException("Type of arguments in the list are not the same.")
