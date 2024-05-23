@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
 
      @Suppress("UNCHECKED_CAST")
-     private val typeReturn: (Any) -> T by lazy {
+     private val typeReturnVal: (Any) -> T by lazy {
          when (type) {
             Int::class -> { it -> (it as String).toInt() as T }
             Char::class -> { it -> (it as String).first() as T }
@@ -123,12 +123,12 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
             lines
                 .map { it.substringAfter("- ") }
                 .map(String::trim)
-                .map(typeReturn)
+                .map(typeReturnVal)
         }
         else {
             createArgsMap(yaml)
                 .values
-                .map(typeReturn)
+                .map(typeReturnVal)
         }
     }
 
@@ -136,34 +136,9 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
         return sequence {
             val argMap = createArgsMap(yaml)
             argMap.values.forEach {
-                yield(typeReturn(it))
+                yield(typeReturnVal(it))
             }
         }
-//        return object : Sequence<T> {
-//            override fun iterator(): Iterator<T> {
-//                return object : Iterator<T> {
-//                    private val iterator = createArgsMap(yaml).values.iterator()
-//                    private lateinit var curr: T
-//                    private var isConsumed = true
-//                    override fun hasNext(): Boolean {
-//                        if(isConsumed) {
-//                            if (iterator.hasNext()) {
-//                                curr = typeReturn(iterator.next())
-//                                isConsumed = false
-//                                return true
-//                            }
-//                            return false
-//                        }
-//                        return true
-//                    }
-//                    override fun next(): T {
-//                        if (!hasNext()) throw NoSuchElementException("The sequence is empty")
-//                        isConsumed = true
-//                        return curr
-//                    }
-//                }
-//            }
-//        }
     }
 
     final override fun parseFolderEager(path: String): List<T> {
@@ -174,7 +149,7 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
             ?.map {
                 try {
                     number++
-                    newInstance(it)
+                    typeReturnVal(it)
                 } catch (e: IllegalArgumentException) {
                     if (number > 0)
                         throw IllegalArgumentException("Type of arguments in the list are not the same.")
@@ -191,7 +166,7 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
             listOfPath?.forEach {
                 val argMap = createArgsMap(it.absolutePath)
                 try {
-                    yield(newInstance(argMap))
+                    yield(typeReturnVal(argMap))
                     number++
                 } catch (e: IllegalArgumentException) {
                     if (number > 0)
@@ -229,5 +204,5 @@ abstract class AbstractYamlParser<T : Any>(type: KClass<T>) : YamlParser<T> {
     }
 
     fun typeReturn(map: Map<String, Any>) : List<T> =
-        map.values.map(typeReturn)
+        map.values.map(typeReturnVal)
 }
