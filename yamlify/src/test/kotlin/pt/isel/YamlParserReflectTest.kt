@@ -126,20 +126,20 @@ class YamlParserReflectTest {
                 city: Porto
               from: Tamega
         """.trimIndent()
-        DummyYamlConverter.resetCount()
+        TestYamlLazyConverter.resetCount()
         val parser = YamlParserReflect.yamlParser(Student::class)
         val seq = parser.parseSequence(yaml.reader())
-        assertEquals(0, DummyYamlConverter.count)
+        assertEquals(0, TestYamlLazyConverter.count)
         val seqIterator = seq.iterator()
         val elem1 = seqIterator.next()
         assertEquals("Maria Candida", elem1.name)
-        assertEquals(1, DummyYamlConverter.count)
+        assertEquals(1, TestYamlLazyConverter.count)
         assertEquals(873435, elem1.nr)
         assertEquals("Rua Rosa", elem1.address?.street)
         assertEquals("Oleiros", elem1.from)
         val elem2 = seqIterator.next()
         assertEquals("Jose Carioca", elem2.name)
-        assertEquals(2, DummyYamlConverter.count)
+        assertEquals(2, TestYamlLazyConverter.count)
     }
 
     @Test

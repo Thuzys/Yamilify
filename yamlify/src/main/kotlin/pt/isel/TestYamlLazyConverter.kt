@@ -1,6 +1,6 @@
 package pt.isel
 
-class DummyYamlConverter: YamlSerializer<String> {
+class TestYamlLazyConverter: YamlSerializer<String> {
     companion object {
         var count = 0
         fun resetCount(){

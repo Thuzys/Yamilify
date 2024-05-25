@@ -1,13 +1,13 @@
 package pt.isel.test
 
-import pt.isel.DummyYamlConverter
+import pt.isel.TestYamlLazyConverter
 import pt.isel.YamlArg
 import pt.isel.YamlConvert
 import pt.isel.YamlToDate
 import java.time.LocalDate
 
 class Student @JvmOverloads constructor (
-    @YamlConvert(DummyYamlConverter::class) val name: String,
+    @YamlConvert(TestYamlLazyConverter::class) val name: String,
     val nr: Int,
     @YamlArg("origin") val from: String,
     val address: Address? = null,

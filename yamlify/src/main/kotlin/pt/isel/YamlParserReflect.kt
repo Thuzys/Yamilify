@@ -68,6 +68,7 @@ class YamlParserReflect<T : Any> private constructor(type: KClass<T>) : Abstract
          * Creates a YamlParser for the given type using reflection if it does not already exist.
          * Keep it in an internal cache of YamlParserReflect instances.
          */
+        @Suppress("UNCHECKED_CAST")
         fun <T : Any> yamlParser(type: KClass<T>): AbstractYamlParser<T> {
             return yamlParsers.getOrPut(type) { YamlParserReflect(type) } as YamlParserReflect<T>
         }
@@ -102,6 +103,7 @@ class YamlParserReflect<T : Any> private constructor(type: KClass<T>) : Abstract
         return ctor.callBy(ctorArgs)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun withTypeFunc(type: KType): (Any) -> Any {
         val classifier = type.classifier
         val kClass =

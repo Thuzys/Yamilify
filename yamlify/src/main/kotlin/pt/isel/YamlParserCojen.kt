@@ -37,6 +37,7 @@ open class YamlParserCojen<T : Any>(
 
         private val yamlParsers: MutableMap<String, YamlParserCojen<*>> = mutableMapOf()
 
+        @Suppress("UNCHECKED_CAST")
         fun <T: Any> getProperties(type: KClass<T>): Collection<KProperty1<T, *>> {
             return mPMap.getOrPut(type) {
                 type.memberProperties
@@ -51,6 +52,7 @@ open class YamlParserCojen<T : Any>(
          * Creates a YamlParser for the given type using Cojen Maker if it does not already exist.
          * Keep it in an internal cache.
          */
+        @Suppress("UNCHECKED_CAST")
         fun <T : Any> yamlParser(
             type: KClass<T>,
             nrOfInitArgs: Int = type.constructors.first().parameters.size,
