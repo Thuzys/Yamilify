@@ -49,6 +49,23 @@ A parser should be a class that offers a function taking a `String` argument and
 
 Validate your implementation with the provided example of the `birth` property and create another example to showcase your approach with a different property type.
 
+### 2.1
+The `YamlParserCojen` class is an alternative implementation of the YAML parser that uses the Cojen bytecode generation library.
+This implementation aims to provide a more efficient way of parsing YAML content by generating bytecode for the mapping logic.
+To demonstrate how it works, consider the following example:
+
+```kotlin
+class Person(val name: String, val age: Int)
+fun main() {
+    val yaml = """
+        name: Alice
+        age: 30
+    """.trimIndent()
+    val person = YamlParserCojen.yamlParser(Person::class, 2).parseObject(yaml.reader())
+    println(person)
+}
+```
+
 ### Usage of JMH
 
 To run the benchmark on your local machine, run:
