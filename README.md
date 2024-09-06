@@ -10,7 +10,7 @@ The `YamlParserReflect` class is responsible for mapping YAML content to domain 
 To demonstrate how it works, consider the following example:
 
 ```kotlin
-data class Person(val name: String, val age: Int)
+class Person(val name: String, val age: Int)
 
 fun main() {
     val yaml = """
